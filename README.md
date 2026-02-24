@@ -21,9 +21,9 @@ Then, add the method(s) in `data_processing.py`'s `compress_data` function with 
 
 If you want to analyze the performance of quantization methods, you can use `offdevice/analyze_data.py`'s functions.
 
-### Preprocess CoralEMG dataset
+### Preprocess EMaGer dataset
 
-Run `python3 offdevice/save_dataset.py`. Processed and quantized CoralEMG will be saved in `dataset/train/<quantization_method>`. You can also add or remove quantization methods to be exported.
+Run `python3 offdevice/save_dataset.py`. Processed and quantized EMaGer will be saved in `dataset/train/<quantization_method>`. You can also add or remove quantization methods to be exported.
 
 ### Off-device training
 
