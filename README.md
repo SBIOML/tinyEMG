@@ -1,7 +1,6 @@
 # TINYEMG
 
-This repository contains the source code used in the _TinyML for Real-Time Embedded HD-EMG Hand
-Gesture Recognition with On-Device Fine-Tuning_ paper. As described in detail in the paper, it includes the server-side (Host PC) as well as embedded device-side (Google Coral Mini) code.
+This repository contains the source code used in the _A Quantization-Aware Embedded System for Real-Time HD-EMG Gesture Recognition_ paper. As described in detail in the paper, it includes the server-side (Host PC) as well as embedded device-side (Google Coral Mini) code.
 
 ![Alt Text](https://github.com/SBIOML/tinyEMG/blob/main/tinyEMG_realtime.gif)
 
