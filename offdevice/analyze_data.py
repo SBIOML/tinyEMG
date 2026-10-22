@@ -1,10 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import pandas as pd
 import dataset_definition as dtdef
 from sklearn.metrics import ConfusionMatrixDisplay
 from scipy import stats
 import seaborn as sns 
+
 
 def histogram(data_df: pd.DataFrame, xlim=1200):
     """
@@ -335,7 +338,7 @@ def evaluate_repartition(dataset_path, subjects, sessions, compressed_methods, b
         plt.ylabel("Density", fontsize=14)
         plt.grid(alpha=0.3)
     plt.legend(["Original", "Min-Max", "Right Shift", "Smart-3", "Root-3"])
-    #plt.savefig("histogram_quant.png")
+    plt.savefig("histogram_quant.png")
     plt.show()
 
 def evaluate_repartition_relative(dataset_path, subjects, sessions, compressed_methods, bit):
@@ -463,6 +466,57 @@ def draw_box_plot(dataset,
     fig.savefig('result_tpu_quant_%sbits_%s.png'%(bit, dataset.name), transparent=True)
     plt.show()
 
+def draw_realtime_results(dataframe_path):
+    xls = pd.ExcelFile(dataframe_path)
+    gesture = ["Fist","Thumb","Grip","Neutral","Pinch","Index"]
+    video1 = pd.read_excel(xls, 'Video 1')
+    video2 = pd.read_excel(xls, 'Video 2')
+    video3 = pd.read_excel(xls, 'Video 3')
+
+    time = video1["Time"].to_numpy() / 1000
+    expected = video1["Expected"].to_numpy()
+    detected = video1["Detected"].to_numpy()
+    transition = video1["Transition"].to_numpy().astype(bool)
+
+    fig, ax = plt.subplots(figsize=(12, 4))
+
+    ax.step(time, expected, where="post", linewidth=2, label="Expected gesture", color="tab:blue")
+    ax.step(time, detected, where="post", linewidth=2, linestyle="--", label="Detected gesture", color="tab:red")
+
+    dt = pd.Series(time).diff().median()
+
+    for i in range(len(time)):
+        if transition[i]:
+            ax.axvspan(time[i], time[i] + dt, color="orange", alpha=0.2, linewidth=0)
+
+    gestures = sorted(set(expected) | set(detected))
+    ax.set_yticks(gestures)
+    ax.set_yticklabels(gesture)
+    ax.set_xlabel("Time (s)", fontsize=14)
+    ax.set_ylabel("Gesture", fontsize=14)
+    ax.set_xlim(time[0], time[-1])
+
+    ax.xaxis.set_major_locator(MultipleLocator(0.5))
+    ax.xaxis.set_minor_locator(MultipleLocator(0.1))
+    ax.xaxis.set_major_formatter(FormatStrFormatter("%.1f"))
+
+    ax.grid(axis="x", which="major", linestyle="-", alpha=0.35)
+    ax.grid(axis="x", which="minor", linestyle=":", alpha=0.25)
+    ax.grid(axis="y", linestyle="--", alpha=0.45)
+
+    ax.tick_params(axis="x", which="major", length=6)
+    ax.tick_params(axis="x", which="minor", length=3)
+
+    handles, labels = ax.get_legend_handles_labels()
+    handles.append(Patch(color="orange", alpha=0.2))
+    labels.append("Transition")
+
+    ax.legend(handles, labels, loc="upper center", ncol=3)
+
+    plt.tight_layout()
+    plt.savefig("gesture_timeline.png", transparent=True)
+    plt.show()
+
 def _generate_results_list(dataframe, dataset, project_path, model_name, subjects, compression_method, bit, tuning=""):
     sessions = ["1", "2"]
     dataset_name = dataset.name
@@ -523,19 +577,21 @@ def _generate_results_list(dataframe, dataset, project_path, model_name, subject
 
 if __name__ == "__main__":
 
-    subjects = ["00","01","02","03","04","05","06","07","08","09","10","11"]
+    dataframe_path = "offdevice/realtime_results/coralemg_realtime.xlsx"
+    draw_realtime_results(dataframe_path)
+    #subjects = ["00","01","02","03","04","05","06","07","08","09","10","11"]
 
     #subjects = ["01","02","03","04","05","06","07","08","09","10"]
 
-    sessions = ["1", "2"]
+    #sessions = ["1", "2"]
     #compression_methods = ["minmax", "msb", "smart", "root"]
 
-    project_path = "offdevice"
-    result_path = "offdevice/ondevice_results"
+    #project_path = "offdevice"
+    #result_path = "offdevice/ondevice_results"
     #result_path = "offdevice/offdevice_results"
-    dataset = dtdef.EmagerDataset()
+    #dataset = dtdef.EmagerDataset()
     #dataset = dtdef.CapgmyoDataset()
-    model_name = "cnn"
+    #model_name = "cnn"
 
     # bits = [1,2,3,4,5,6,7,8]
     # for bit in bits :
@@ -544,8 +600,8 @@ if __name__ == "__main__":
     #     )
     
     # mean_hypothesis_test(dataset, result_path, model_name, subjects, sessions, "minmax", 6, fine_tuned=True, ondevice=False)
-    for i in range(8):
-        draw_box_plot(dataset, project_path, model_name, subjects, str(i+1))
+    # for i in range(8):
+    #     draw_box_plot(dataset, project_path, model_name, subjects, str(i+1))
 
     # evaluate_time(
     #     dataset,
